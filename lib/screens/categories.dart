@@ -41,7 +41,6 @@ class _CategoriesState extends State<Categories> {
         centerTitle: true,
         toolbarHeight: 60.0,
       ),
-      backgroundColor: colorWhite,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.0),
         child: ListView.builder(
@@ -54,7 +53,7 @@ class _CategoriesState extends State<Categories> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CategoryProducts(),
+                    builder: (context) => CategoryProducts(item: index),
                   ),
                 );
               },
@@ -66,11 +65,10 @@ class _CategoriesState extends State<Categories> {
                   borderRadius: BorderRadius.circular(20.0),
                   boxShadow: [
                     BoxShadow(
-                      spreadRadius: 3.0,
-                      color: colorBlack.withOpacity(0.2),
-                      offset: Offset(0.0, 3.0),
-                      blurRadius: 7.0,
-                    )
+                      blurRadius: 10.0,
+                      color: colorBlueGray,
+                      offset: Offset(0.0, 5.0),
+                    ),
                   ],
                   image: DecorationImage(
                     fit: BoxFit.cover,
@@ -95,6 +93,7 @@ class _CategoriesState extends State<Categories> {
           },
         ),
       ),
+      backgroundColor: colorWhite,
     );
   }
 }

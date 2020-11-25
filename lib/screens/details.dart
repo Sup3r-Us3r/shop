@@ -15,84 +15,112 @@ class Details extends StatefulWidget {
 
 class _DetailsState extends State<Details> {
   bool _toggleLikeProduct = false;
+  int _currentPage = 0;
 
   @override
   Widget build(BuildContext context) {
-    final double sizeHeight = MediaQuery.of(context).size.height;
-    final double sizeWidth = MediaQuery.of(context).size.width;
+    final double _sizeHeight = MediaQuery.of(context).size.height;
+    final double _sizeWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Stack(
-            children: [
-              Hero(
-                tag: widget.product.imageUrl,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30.0),
-                    bottomRight: Radius.circular(30.0),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    },
+                    icon: Icon(
+                      MaterialCommunityIcons.keyboard_backspace,
+                      color: colorBlack,
+                      size: 30.0,
+                    ),
                   ),
-                  child: Image.network(
-                    widget.product.imageUrl,
-                    height: sizeHeight * 0.5,
-                    width: sizeWidth,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HomePage(),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _toggleLikeProduct = !_toggleLikeProduct;
+                      });
+                    },
+                    icon: _toggleLikeProduct
+                        ? Icon(
+                            MaterialCommunityIcons.heart,
+                            color: colorRed,
+                            size: 30.0,
+                          )
+                        : Icon(
+                            MaterialCommunityIcons.heart_outline,
+                            color: colorBlack,
+                            size: 30.0,
                           ),
-                        );
-                      },
-                      icon: Icon(
-                        MaterialCommunityIcons.keyboard_backspace,
-                        color: colorWhite,
-                        size: 30.0,
+                  ),
+                ],
+              ),
+            ),
+            Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Hero(
+                  tag: widget.product.imageUrl,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.0),
+                      bottomRight: Radius.circular(30.0),
+                    ),
+                    child: Container(
+                      height: _sizeHeight * 0.5,
+                      width: _sizeWidth,
+                      child: PageView.builder(
+                        onPageChanged: (int indexChangedPage) {
+                          setState(() {
+                            _currentPage = indexChangedPage;
+                          });
+                        },
+                        itemCount: 5,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Image.network(
+                            widget.product.imageUrl,
+                            fit: BoxFit.cover,
+                          );
+                        },
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _toggleLikeProduct = !_toggleLikeProduct;
-                        });
-                      },
-                      icon: _toggleLikeProduct
-                          ? Icon(
-                              MaterialCommunityIcons.heart,
-                              color: colorRed,
-                              size: 30.0,
-                            )
-                          : Icon(
-                              MaterialCommunityIcons.heart_outline,
-                              color: colorWhite,
-                              size: 30.0,
-                            ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Container(
+                Positioned(
+                  bottom: 20.0,
+                  child: Row(
+                    children: List.generate(5, (index) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5.0),
+                        child: CircleAvatar(
+                          radius: 6.0,
+                          backgroundColor: _currentPage == index
+                              ? colorBrown
+                              : colorWhite.withAlpha(100),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+            Container(
               padding: EdgeInsets.fromLTRB(30.0, 30.0, 30.0, 20.0),
-              decoration: BoxDecoration(
-                color: colorWhite,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.0),
-                  topRight: Radius.circular(20.0),
-                ),
+              color: colorWhite,
+              constraints: BoxConstraints(
+                minHeight: _sizeHeight * 0.5 - 80.0,
               ),
               child: Stack(
                 children: [
@@ -120,11 +148,21 @@ class _DetailsState extends State<Details> {
                         ],
                       ),
                       SizedBox(height: 20.0),
-                      Text(
-                        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                        style: TextStyle(
-                          color: colorDarkGray,
-                          fontSize: 20.0,
+                      Container(
+                        height: 100.0,
+                        child: Scrollbar(
+                          radius: Radius.circular(5.0),
+                          thickness: 3.0,
+                          child: SingleChildScrollView(
+                            child: Text(
+                              'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                              // 'Lorem ipsum dolor sit amet',
+                              style: TextStyle(
+                                color: colorDarkGray,
+                                fontSize: 20.0,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -133,12 +171,12 @@ class _DetailsState extends State<Details> {
                     bottom: 0.0,
                     child: Container(
                       height: 70.0,
-                      width: sizeWidth - 60.0,
+                      width: _sizeWidth - 60.0,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.0),
+                        borderRadius: BorderRadius.circular(50.0),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.0),
+                        borderRadius: BorderRadius.circular(50.0),
                         child: RaisedButton(
                           onPressed: () {},
                           color: colorBlack,
@@ -169,8 +207,8 @@ class _DetailsState extends State<Details> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       backgroundColor: colorWhite,
     );

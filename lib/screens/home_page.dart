@@ -28,6 +28,8 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   CircleAvatar(
                     radius: 25.0,
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.transparent,
                     backgroundImage: NetworkImage(imageUrl),
                   ),
                   Row(

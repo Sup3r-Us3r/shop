@@ -10,7 +10,7 @@ void main() {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Shop',
-      home: CategoryProducts(),
+      home: HomePage(),
       theme: ThemeData(
         fontFamily: 'Ubuntu',
         primaryColor: colorWhite,
