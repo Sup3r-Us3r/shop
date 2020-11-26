@@ -28,117 +28,117 @@ class _CategoryProductsState extends State<CategoryProducts> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 50.0, horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(),
-                        ),
-                      );
-                    },
-                    icon: Icon(
-                      Feather.align_left,
-                      color: colorBlack,
-                      size: 30.0,
-                    ),
-                  ),
-                  Stack(
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          AntDesign.shoppingcart,
-                          color: colorBlack,
-                          size: 30.0,
-                        ),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 50.0, horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(),
                       ),
-                      Positioned(
-                        right: 0.0,
-                        child: CircleAvatar(
-                          backgroundColor: colorBrown,
-                          radius: 12.0,
-                          child: Text(
-                            '21',
-                            style: TextStyle(
-                              color: colorWhite,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    );
+                  },
+                  icon: Icon(
+                    Feather.align_left,
+                    color: colorBlack,
+                    size: 30.0,
                   ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                'The best products of Natura',
-                style: TextStyle(
-                  color: colorBlack,
-                  fontSize: 30.0,
-                  letterSpacing: 1.2,
                 ),
-              ),
-            ),
-            Container(
-              height: 80.0,
-              margin: EdgeInsets.symmetric(vertical: 20.0),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (BuildContext context, int index) {
-                  CategoriesModel category = categories[index];
-
-                  return GestureDetector(
-                    onTap: () {
-                      print(category.name);
-                      setState(() {
-                        itemSelected = index;
-                      });
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            category.name,
-                            style: TextStyle(
-                              color: itemSelected == index
-                                  ? colorDarkGray
-                                  : colorBlueGray,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 10.0),
-                          CircleAvatar(
-                            backgroundColor: itemSelected == index
-                                ? colorBrown
-                                : colorBlueGray,
-                            radius: 3.0,
-                          ),
-                        ],
+                Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        AntDesign.shoppingcart,
+                        color: colorBlack,
+                        size: 30.0,
                       ),
                     ),
-                  );
-                },
+                    Positioned(
+                      right: 0.0,
+                      child: CircleAvatar(
+                        backgroundColor: colorBrown,
+                        radius: 12.0,
+                        child: Text(
+                          '21',
+                          style: TextStyle(
+                            color: colorWhite,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              'The best products of Natura',
+              style: TextStyle(
+                color: colorBlack,
+                fontSize: 30.0,
+                letterSpacing: 1.2,
               ),
             ),
-            Container(
-              height: 350.0,
+          ),
+          Container(
+            height: 80.0,
+            margin: EdgeInsets.symmetric(vertical: 20.0),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (BuildContext context, int index) {
+                CategoriesModel category = categories[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    print(category.name);
+                    setState(() {
+                      itemSelected = index;
+                    });
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          category.name,
+                          style: TextStyle(
+                            color: itemSelected == index
+                                ? colorDarkGray
+                                : colorBlueGray,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10.0),
+                        CircleAvatar(
+                          backgroundColor: itemSelected == index
+                              ? colorBrown
+                              : colorBlueGray,
+                          radius: 3.0,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(bottom: 20.0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: productsList.length,
@@ -208,8 +208,8 @@ class _CategoryProductsState extends State<CategoryProducts> {
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       backgroundColor: colorWhite,
     );

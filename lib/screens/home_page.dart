@@ -3,8 +3,10 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:shop/constants/colors.dart';
 import 'package:shop/models/products_model.dart';
+import 'package:shop/screens/cart.dart';
 import 'package:shop/screens/categories.dart';
 import 'package:shop/screens/details.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -44,7 +46,7 @@ class _HomePageState extends State<HomePage> {
                           );
                         },
                         icon: Icon(
-                          Ionicons.ios_options,
+                          Ionicons.ios_list,
                           color: colorBlack,
                           size: 30.0,
                         ),
@@ -52,7 +54,14 @@ class _HomePageState extends State<HomePage> {
                       Stack(
                         children: [
                           IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Cart(),
+                                ),
+                              );
+                            },
                             icon: Icon(
                               AntDesign.shoppingcart,
                               color: colorBlack,
@@ -124,8 +133,6 @@ class _HomePageState extends State<HomePage> {
                       cursorColor: colorBrown,
                       decoration: InputDecoration.collapsed(
                         hintText: 'Search...',
-                        fillColor: Colors.red,
-                        focusColor: Colors.blue,
                         hintStyle: TextStyle(
                           color: colorDarkGray,
                           fontSize: 20.0,
@@ -164,8 +171,9 @@ class _HomePageState extends State<HomePage> {
                           borderRadius: BorderRadius.circular(20.0),
                           child: Hero(
                             tag: post.imageUrl,
-                            child: Image.network(
-                              post.imageUrl,
+                            child: FadeInImage.memoryNetwork(
+                              placeholder: kTransparentImage,
+                              image: post.imageUrl,
                               fit: BoxFit.cover,
                             ),
                           ),

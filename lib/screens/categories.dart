@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:shop/constants/colors.dart';
 import 'package:shop/models/categories_model.dart';
 import 'package:shop/screens/category_products.dart';
-import 'package:shop/screens/home_page.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class Categories extends StatefulWidget {
   @override
@@ -11,18 +12,26 @@ class Categories extends StatefulWidget {
 }
 
 class _CategoriesState extends State<Categories> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomePage(),
-              ),
-            );
+            Navigator.pop(context);
           },
           icon: Icon(
             MaterialCommunityIcons.keyboard_backspace,
@@ -34,12 +43,13 @@ class _CategoriesState extends State<Categories> {
           'Categories',
           style: TextStyle(
             color: colorBlack,
-            fontSize: 23.0,
+            fontSize: 25.0,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        toolbarHeight: 60.0,
+        toolbarHeight: 80.0,
+        elevation: 0.3,
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -57,28 +67,32 @@ class _CategoriesState extends State<Categories> {
                   ),
                 );
               },
-              child: Container(
-                height: 180.0,
-                width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.symmetric(vertical: 20.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 10.0,
-                      color: colorBlueGray,
-                      offset: Offset(0.0, 5.0),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Container(
+                    height: 180.0,
+                    width: MediaQuery.of(context).size.width,
+                    margin: EdgeInsets.symmetric(vertical: 20.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
                     ),
-                  ],
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(category.backgroundUrl),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: isLoading
+                          ? Shimmer.fromColors(
+                              baseColor: Colors.grey[300],
+                              highlightColor: colorWhite,
+                              child: Card(color: colorGray),
+                            )
+                          : Image.network(
+                              category.backgroundUrl,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(left: 20.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
+                  Positioned(
+                    left: 20.0,
                     child: Text(
                       category.name,
                       style: TextStyle(
@@ -87,7 +101,7 @@ class _CategoriesState extends State<Categories> {
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             );
           },
