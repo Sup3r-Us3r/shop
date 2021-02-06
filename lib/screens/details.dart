@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:shop/blocs/details_bloc.dart';
 import 'package:shop/constants/colors.dart';
-import 'package:shop/models/products_model.dart';
-import 'package:shop/screens/home_page.dart';
+import 'package:shop/models/product_model.dart';
+import 'package:shop/util/formatPrice.dart';
 
-class Details extends StatefulWidget {
-  final ProductsModel product;
+class Details extends StatelessWidget {
+  final ProductModel product;
 
   Details({this.product});
 
   @override
-  _DetailsState createState() => _DetailsState();
-}
-
-class _DetailsState extends State<Details> {
-  bool _toggleLikeProduct = false;
-  int _currentPage = 0;
-  int _amountValue = 1;
-
-  @override
   Widget build(BuildContext context) {
+    final DetailsBloc detailsBloc = Provider.of<DetailsBloc>(context);
+    detailsBloc.currentProductData(product);
+
     final double _sizeHeight = MediaQuery.of(context).size.height;
     final double _sizeWidth = MediaQuery.of(context).size.width;
 
@@ -33,9 +29,7 @@ class _DetailsState extends State<Details> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   icon: Icon(
                     MaterialCommunityIcons.keyboard_backspace,
                     color: colorBlack,
@@ -43,12 +37,8 @@ class _DetailsState extends State<Details> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _toggleLikeProduct = !_toggleLikeProduct;
-                    });
-                  },
-                  icon: _toggleLikeProduct
+                  onPressed: () => detailsBloc.toggleLikeProduct(),
+                  icon: detailsBloc.showCurrentProductInfo('likeProduct')
                       ? Icon(
                           MaterialCommunityIcons.heart,
                           color: colorRed,
@@ -67,7 +57,7 @@ class _DetailsState extends State<Details> {
             alignment: Alignment.bottomCenter,
             children: [
               Hero(
-                tag: widget.product.imageUrl,
+                tag: product.id,
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(30.0),
@@ -77,16 +67,15 @@ class _DetailsState extends State<Details> {
                     height: _sizeHeight * 0.5,
                     width: _sizeWidth,
                     child: PageView.builder(
-                      onPageChanged: (int indexChangedPage) {
-                        setState(() {
-                          _currentPage = indexChangedPage;
-                        });
-                      },
-                      itemCount: 5,
+                      onPageChanged: (int indexChangedPage) =>
+                          detailsBloc.whenPageChanged(indexChangedPage),
+                      itemCount: product.images.length,
                       itemBuilder: (BuildContext context, int index) {
-                        return Image.network(
-                          widget.product.imageUrl,
-                          fit: BoxFit.cover,
+                        return InteractiveViewer(
+                          child: Image.network(
+                            product.images[index].url,
+                            fit: BoxFit.cover,
+                          ),
                         );
                       },
                     ),
@@ -96,14 +85,16 @@ class _DetailsState extends State<Details> {
               Positioned(
                 bottom: 20.0,
                 child: Row(
-                  children: List.generate(5, (index) {
+                  children: List.generate(product.images.length, (index) {
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 5.0),
                       child: CircleAvatar(
                         radius: 6.0,
-                        backgroundColor: _currentPage == index
-                            ? colorBrown
-                            : colorWhite.withAlpha(100),
+                        backgroundColor:
+                            detailsBloc.showCurrentProductInfo('currentPage') ==
+                                    index
+                                ? colorBrown
+                                : colorWhite.withAlpha(100),
                       ),
                     );
                   }),
@@ -120,7 +111,7 @@ class _DetailsState extends State<Details> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Title of product',
+                      product.name,
                       style: TextStyle(
                         color: colorBlack,
                         fontSize: 30.0,
@@ -129,7 +120,7 @@ class _DetailsState extends State<Details> {
                     ),
                     SizedBox(height: 10.0),
                     Text(
-                      '1 each',
+                      '1 cada',
                       style: TextStyle(
                         color: colorDarkGray,
                         fontSize: 20.0,
@@ -154,13 +145,8 @@ class _DetailsState extends State<Details> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 IconButton(
-                                  onPressed: () {
-                                    if (_amountValue == 1) return;
-
-                                    setState(() {
-                                      _amountValue -= 1;
-                                    });
-                                  },
+                                  onPressed: () =>
+                                      detailsBloc.decrementProduct(),
                                   icon: Icon(
                                     AntDesign.minus,
                                     color: colorBlack,
@@ -169,7 +155,9 @@ class _DetailsState extends State<Details> {
                                 ),
                                 SizedBox(width: 20.0),
                                 Text(
-                                  _amountValue.toString(),
+                                  detailsBloc
+                                      .showCurrentProductInfo('amountValue')
+                                      .toString(),
                                   style: TextStyle(
                                     color: colorBlack,
                                     fontSize: 18.0,
@@ -177,11 +165,8 @@ class _DetailsState extends State<Details> {
                                 ),
                                 SizedBox(width: 20.0),
                                 IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _amountValue += 1;
-                                    });
-                                  },
+                                  onPressed: () =>
+                                      detailsBloc.incrementProduct(),
                                   icon: Icon(
                                     AntDesign.plus,
                                     color: colorBlack,
@@ -192,10 +177,14 @@ class _DetailsState extends State<Details> {
                             ),
                           ),
                           Text(
-                            '\$21.00',
+                            detailsBloc.showCurrentProductInfo('totalPrice') !=
+                                    ''
+                                ? detailsBloc
+                                    .showCurrentProductInfo('totalPrice')
+                                : formatPrice(product.price),
                             style: TextStyle(
                               color: colorBlack,
-                              fontSize: 30.0,
+                              fontSize: 25.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -203,7 +192,7 @@ class _DetailsState extends State<Details> {
                       ),
                     ),
                     Text(
-                      'Product Description',
+                      'Descrição do produto',
                       style: TextStyle(
                         color: colorBlack,
                         fontSize: 20.0,
@@ -216,8 +205,7 @@ class _DetailsState extends State<Details> {
                       margin: EdgeInsets.symmetric(vertical: 20.0),
                       child: SingleChildScrollView(
                         child: Text(
-                          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                          // 'Lorem ipsum dolor sit amet',
+                          product.description,
                           style: TextStyle(
                             color: colorDarkGray,
                             fontSize: 20.0,
@@ -234,21 +222,26 @@ class _DetailsState extends State<Details> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(50.0),
                         child: RaisedButton(
-                          onPressed: () {},
-                          color: colorBlack,
+                          onPressed: () => detailsBloc.toggleProductOnCart(),
+                          color: colorBrown,
                           elevation: 0.0,
+                          highlightColor: Colors.transparent,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                AntDesign.shoppingcart,
+                                !detailsBloc.productAddedOnCart
+                                    ? MaterialCommunityIcons.cart_plus
+                                    : MaterialCommunityIcons.cart_remove,
                                 color: colorWhite,
                                 size: 30.0,
                               ),
                               SizedBox(width: 15.0),
                               Text(
-                                'Add to cart',
+                                !detailsBloc.productAddedOnCart
+                                    ? 'Adicionar ao carrinho'
+                                    : 'Remover do carrinho',
                                 style: TextStyle(
                                   color: colorWhite,
                                   fontSize: 20.0,
