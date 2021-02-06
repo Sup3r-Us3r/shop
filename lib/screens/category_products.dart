@@ -1,32 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:shop/blocs/details_bloc.dart';
 import 'package:shop/constants/colors.dart';
+import 'package:shop/util/formatPrice.dart';
 import 'package:shop/models/categories_model.dart';
-import 'package:shop/models/products_model.dart';
+import 'package:shop/models/product_model.dart';
 import 'package:shop/screens/details.dart';
-import 'package:shop/screens/home_page.dart';
 
 class CategoryProducts extends StatefulWidget {
-  final int item;
+  final List<CategoryModel> categories;
+  final int categoryIndexTarget;
 
-  CategoryProducts({this.item});
+  CategoryProducts({this.categories, this.categoryIndexTarget});
 
   @override
   _CategoryProductsState createState() => _CategoryProductsState();
 }
 
 class _CategoryProductsState extends State<CategoryProducts> {
-  int itemSelected;
+  int categorySelected;
+  List<ProductModel> _productsData;
+  final ScrollController _scrollListViewController = ScrollController();
+
+  void _productsByCategory() async {
+    try {
+      Dio dio = Dio();
+      Response response;
+
+      var findCategoryName = widget.categories[categorySelected].name;
+
+      response = await dio.get(
+        'http://192.168.2.8:3333/product/index',
+        queryParameters: {
+          'category': findCategoryName,
+        },
+      );
+
+      var productsData = (response.data as List)
+          .map((product) => ProductModel.fromJson(product))
+          .toList();
+
+      setState(() {
+        _productsData = productsData;
+      });
+    } catch (err) {
+      print(err);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    itemSelected = widget.item;
+    categorySelected = widget.categoryIndexTarget;
+
+    _productsByCategory();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToItem(categorySelected);
+    });
+  }
+
+  void _scrollToItem(int currentIndex) {
+    _scrollListViewController.animateTo(
+      (currentIndex * 70).toDouble(),
+      duration: Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final DetailsBloc detailsBloc = Provider.of<DetailsBloc>(context);
+
     return Scaffold(
       body: Column(
         children: [
@@ -36,14 +84,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(),
-                      ),
-                    );
-                  },
+                  onPressed: () => Navigator.of(context).pushNamed('/'),
                   icon: Icon(
                     Feather.align_left,
                     color: colorBlack,
@@ -53,7 +94,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
                 Stack(
                   children: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.of(context).pushNamed('/cart'),
                       icon: Icon(
                         AntDesign.shoppingcart,
                         color: colorBlack,
@@ -66,7 +107,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
                         backgroundColor: colorBrown,
                         radius: 12.0,
                         child: Text(
-                          '21',
+                          detailsBloc.amountItemsOnCart.toString(),
                           style: TextStyle(
                             color: colorWhite,
                             fontWeight: FontWeight.bold,
@@ -83,7 +124,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 20.0),
             child: Text(
-              'The best products of Natura',
+              'Veja todos os produtos selecionados',
               style: TextStyle(
                 color: colorBlack,
                 fontSize: 30.0,
@@ -96,15 +137,17 @@ class _CategoryProductsState extends State<CategoryProducts> {
             margin: EdgeInsets.symmetric(vertical: 20.0),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
+              controller: _scrollListViewController,
+              itemCount: widget.categories.length,
               itemBuilder: (BuildContext context, int index) {
-                CategoriesModel category = categories[index];
+                CategoryModel category = widget.categories[index];
 
                 return GestureDetector(
                   onTap: () {
-                    print(category.name);
                     setState(() {
-                      itemSelected = index;
+                      categorySelected = index;
+                      _productsByCategory();
+                      _scrollToItem(index);
                     });
                   },
                   child: Padding(
@@ -115,7 +158,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
                         Text(
                           category.name,
                           style: TextStyle(
-                            color: itemSelected == index
+                            color: categorySelected == index
                                 ? colorDarkGray
                                 : colorBlueGray,
                             fontSize: 18.0,
@@ -124,7 +167,7 @@ class _CategoryProductsState extends State<CategoryProducts> {
                         ),
                         SizedBox(height: 10.0),
                         CircleAvatar(
-                          backgroundColor: itemSelected == index
+                          backgroundColor: categorySelected == index
                               ? colorBrown
                               : colorBlueGray,
                           radius: 3.0,
@@ -137,77 +180,90 @@ class _CategoryProductsState extends State<CategoryProducts> {
             ),
           ),
           Expanded(
-            child: Container(
-              margin: EdgeInsets.only(bottom: 20.0),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: productsList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  ProductsModel product = productsList[index];
+            child: _productsData != null && _productsData.length != 0
+                ? Container(
+                    margin: EdgeInsets.only(bottom: 20.0),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _productsData.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        ProductModel product = _productsData[index];
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Details(
-                            product: product,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Hero(
-                      tag: product.imageUrl,
-                      child: Stack(
-                        alignment: Alignment.bottomLeft,
-                        children: [
-                          Container(
-                            width: 200.0,
-                            margin: EdgeInsets.symmetric(horizontal: 20.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20.0),
-                              image: DecorationImage(
-                                image: NetworkImage(product.imageUrl),
-                                fit: BoxFit.cover,
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Details(
+                                  product: product,
+                                ),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 7.0,
-                                  color: colorBlack.withOpacity(0.1),
-                                  offset: Offset(7.0, 0.0),
+                            );
+                          },
+                          child: Hero(
+                            tag: product.id,
+                            child: Stack(
+                              alignment: Alignment.bottomLeft,
+                              children: [
+                                Container(
+                                  width: 200.0,
+                                  margin:
+                                      EdgeInsets.symmetric(horizontal: 20.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20.0),
+                                    image: DecorationImage(
+                                      image:
+                                          NetworkImage(product.images[0].url),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        blurRadius: 7.0,
+                                        color: colorBlack.withOpacity(0.1),
+                                        offset: Offset(7.0, 0.0),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 20.0,
+                                  left: 40.0,
+                                  child: Container(
+                                    height: 40.0,
+                                    width: 110.0,
+                                    decoration: BoxDecoration(
+                                      color: colorWhite.withAlpha(150),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        formatPrice(product.price),
+                                        style: TextStyle(
+                                          color: colorBlack,
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          Positioned(
-                            bottom: 20.0,
-                            left: 40.0,
-                            child: Container(
-                              height: 40.0,
-                              width: 110.0,
-                              decoration: BoxDecoration(
-                                color: colorWhite.withAlpha(150),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  product.price,
-                                  style: TextStyle(
-                                    color: colorBlack,
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        );
+                      },
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      'Nenhum produto localizado',
+                      style: TextStyle(
+                        color: colorBlueGray,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20.0,
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
           ),
         ],
       ),
