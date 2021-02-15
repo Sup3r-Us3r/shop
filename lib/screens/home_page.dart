@@ -5,21 +5,14 @@ import 'dart:math';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:shop/blocs/user_bloc.dart';
 import 'package:shop/constants/colors.dart';
 import 'package:shop/util/formatPrice.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/blocs/details_bloc.dart';
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final String imageUrl =
-      'https://avatars0.githubusercontent.com/u/22561893?s=460&u=fcc8d1cf270f6eb3c101fcd56021713a379c43a9&v=4';
-
+class HomePage extends StatelessWidget {
   Future<List<ProductModel>> _getProducts() async {
     Dio dio = Dio();
     Response response;
@@ -125,9 +118,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _signOut(BuildContext context) async {
+    final UserBloc _userBloc = Provider.of<UserBloc>(context, listen: false);
+
+    var response = await _userBloc.signOut();
+
+    if (response) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/signIn',
+        (route) => false,
+      );
+    }
+  }
+
+  SnackBar _exitToApp(BuildContext context) {
+    return SnackBar(
+      behavior: SnackBarBehavior.floating,
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      backgroundColor: colorBlack.withAlpha(200),
+      duration: Duration(seconds: 5),
+      content: Text(
+        'Deseja sair?',
+        style: TextStyle(
+          color: colorWhite,
+          fontSize: 16.0,
+        ),
+      ),
+      action: SnackBarAction(
+        label: 'SAIR',
+        onPressed: () => _signOut(context),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final DetailsBloc detailsBloc = Provider.of<DetailsBloc>(context);
+    final UserBloc _userBloc = Provider.of<UserBloc>(context);
+    final DetailsBloc _detailsBloc = Provider.of<DetailsBloc>(context);
     final TextEditingController _searchController = TextEditingController();
 
     return Scaffold(
@@ -139,17 +166,29 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    radius: 25.0,
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.transparent,
-                    backgroundImage: NetworkImage(imageUrl),
+                  Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () {
+                        Scaffold.of(context).showSnackBar(
+                          _exitToApp(context),
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 25.0,
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.transparent,
+                        backgroundImage: NetworkImage(
+                          _userBloc.userData.photo.url,
+                        ),
+                      ),
+                    ),
                   ),
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () =>
-                            Navigator.of(context).pushNamed('/categories'),
+                        onPressed: () => Navigator.of(context).pushNamed(
+                          '/categories',
+                        ),
                         icon: Icon(
                           Ionicons.ios_list,
                           color: colorBlack,
@@ -159,8 +198,9 @@ class _HomePageState extends State<HomePage> {
                       Stack(
                         children: [
                           IconButton(
-                            onPressed: () => Navigator.of(context)
-                                .pushNamed('/favoriteProducts'),
+                            onPressed: () => Navigator.of(context).pushNamed(
+                              '/favoriteProducts',
+                            ),
                             icon: Icon(
                               MaterialCommunityIcons.heart_outline,
                               color: colorBlack,
@@ -173,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                               backgroundColor: colorBrown,
                               radius: 12.0,
                               child: Text(
-                                detailsBloc.quantityOfFavoriteProducts
+                                _detailsBloc.quantityOfFavoriteProducts
                                     .toString(),
                                 style: TextStyle(
                                   color: colorWhite,
@@ -202,7 +242,7 @@ class _HomePageState extends State<HomePage> {
                               backgroundColor: colorBrown,
                               radius: 12.0,
                               child: Text(
-                                detailsBloc.amountItemsOnCart.toString(),
+                                _detailsBloc.amountItemsOnCart.toString(),
                                 style: TextStyle(
                                   color: colorWhite,
                                   fontWeight: FontWeight.bold,
@@ -246,13 +286,10 @@ class _HomePageState extends State<HomePage> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      AntDesign.search1,
-                      color: colorDarkGray,
-                      size: 25.0,
-                    ),
+                  Icon(
+                    AntDesign.search1,
+                    color: colorDarkGray,
+                    size: 25.0,
                   ),
                   SizedBox(width: 5.0),
                   Expanded(
@@ -263,8 +300,12 @@ class _HomePageState extends State<HomePage> {
                         hintText: 'Pesquisar...',
                         hintStyle: TextStyle(
                           color: colorDarkGray,
-                          fontSize: 20.0,
+                          fontSize: 18.0,
                         ),
+                      ),
+                      style: TextStyle(
+                        color: colorDarkGray,
+                        fontSize: 18.0,
                       ),
                       controller: _searchController,
                       onSubmitted: (String inputValue) {
@@ -281,7 +322,7 @@ class _HomePageState extends State<HomePage> {
             ),
             FutureBuilder(
               future: _getProducts(),
-              builder: (context, snapshot) {
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.none:
                   case ConnectionState.waiting:
