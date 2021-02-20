@@ -9,12 +9,18 @@ import 'package:shop/screens/details.dart';
 import 'package:shop/screens/favorite_products.dart';
 import 'package:shop/screens/home_page.dart';
 import 'package:shop/screens/researched_products.dart';
+import 'package:shop/screens/sign_in.dart';
+import 'package:shop/screens/sign_up.dart';
 
 class RouteGenerator {
   static Route<dynamic> routeGenerator(RouteSettings settings) {
     final _args = settings.arguments;
 
     switch (settings.name) {
+      case '/signIn':
+        return MaterialPageRoute(builder: (_) => SignIn());
+      case '/signUp':
+        return MaterialPageRoute(builder: (_) => SignUp());
       case '/':
         return MaterialPageRoute(builder: (_) => HomePage());
       case '/categories':
