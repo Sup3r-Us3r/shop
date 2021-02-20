@@ -52,7 +52,7 @@ class ProductModel {
     data['category'] = this.category;
     data['description'] = this.description;
 
-    if (data['images'] != null) {
+    if (this.images != null) {
       data['images'] = this.images.map((image) => image.toJson()).toList();
     }
 

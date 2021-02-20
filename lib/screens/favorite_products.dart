@@ -18,8 +18,10 @@ class FavoriteProducts extends StatelessWidget {
         ProductDetailsModel product = detailsBloc.favoriteProducts[index];
 
         return GestureDetector(
-          onTap: () =>
-              Navigator.of(context).pushNamed('/details', arguments: product),
+          onTap: () => Navigator.of(context).pushNamed(
+            '/details',
+            arguments: product,
+          ),
           child: Container(
             padding: EdgeInsets.all(20.0),
             margin: EdgeInsets.symmetric(vertical: 10.0),

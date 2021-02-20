@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:shop/models/product_details_model.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/util/formatPrice.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailsBloc extends ChangeNotifier {
   ProductModel _currentProduct;
@@ -18,7 +20,7 @@ class DetailsBloc extends ChangeNotifier {
 
   void currentProductData(ProductModel data) {
     _currentProduct = data;
-    _addCurrentProductToProductsData();
+    _initCurrentProduct();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setPosition0OnPageView();
@@ -61,7 +63,7 @@ class DetailsBloc extends ChangeNotifier {
     }
   }
 
-  void _addCurrentProductToProductsData() {
+  void _initCurrentProduct() async {
     if (_checkProductExistsOnProductsData()) return;
 
     _productsData.add(
@@ -76,11 +78,71 @@ class DetailsBloc extends ChangeNotifier {
         images: _currentProduct.images,
         created_at: _currentProduct.created_at,
         likeProduct: false,
+        productInCart: false,
         currentPage: 0,
         amountValue: 1,
         totalPrice: formatPrice(_currentProduct.price),
       ),
     );
+
+    await _saveProductDataOnDisk();
+  }
+
+  Future _initStateProduct() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+
+    try {
+      var response = _prefs.getString('@shop/stateProducts');
+
+      if (response != null) {
+        var responseDecode = json.decode(response);
+
+        List<ProductDetailsModel> responseList = (responseDecode as List)
+            .map((product) => ProductDetailsModel.fromJson(product))
+            .toList();
+
+        _productsData = responseList;
+      }
+    } catch (_) {
+      return;
+    }
+  }
+
+  void _initStateFavoriteProducts() {
+    var favoriteProductsList =
+        _productsData.where((product) => product.likeProduct).toList();
+
+    _favoriteProducts = favoriteProductsList;
+  }
+
+  void _initStateCart() {
+    var productInCartList =
+        _productsData.where((product) => product.productInCart).toList();
+
+    _cart = productInCartList;
+  }
+
+  Future getDetailsBlocState() async {
+    await _initStateProduct();
+    _initStateFavoriteProducts();
+    _initStateCart();
+
+    notifyListeners();
+  }
+
+  Future _saveProductDataOnDisk() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+
+    try {
+      await _prefs.setString(
+        '@shop/stateProducts',
+        json.encode(
+          _productsData.map((product) => product.toJson()).toList(),
+        ),
+      );
+    } catch (_) {
+      return;
+    }
   }
 
   dynamic showCurrentProductInfo(String whichField) {
@@ -91,6 +153,8 @@ class DetailsBloc extends ChangeNotifier {
     switch (whichField) {
       case 'likeProduct':
         return specificData.likeProduct;
+      case 'productInCart':
+        return specificData.productInCart;
       case 'currentPage':
         return specificData.currentPage;
       case 'amountValue':
@@ -108,13 +172,25 @@ class DetailsBloc extends ChangeNotifier {
 
     switch (whichField) {
       case 'likeProduct':
-        return updateProduct.likeProduct = newValue;
+        updateProduct.likeProduct = newValue;
+        _saveProductDataOnDisk();
+        break;
+      case 'productInCart':
+        updateProduct.productInCart = newValue;
+        _saveProductDataOnDisk();
+        break;
       case 'currentPage':
-        return updateProduct.currentPage = newValue;
+        updateProduct.currentPage = newValue;
+        _saveProductDataOnDisk();
+        break;
       case 'amountValue':
-        return updateProduct.amountValue = newValue;
+        updateProduct.amountValue = newValue;
+        _saveProductDataOnDisk();
+        break;
       case 'totalPrice':
-        return updateProduct.totalPrice = newValue;
+        updateProduct.totalPrice = newValue;
+        _saveProductDataOnDisk();
+        break;
       default:
     }
   }
@@ -183,22 +259,24 @@ class DetailsBloc extends ChangeNotifier {
     calcTotalPrice();
   }
 
-  void toggleProductOnCart() {
+  void toggleProductInCart() {
+    bool currentProductInCartValue = showCurrentProductInfo('productInCart');
+
+    _changeSomeCurrentProductValue('productInCart', !currentProductInCartValue);
+
     if (_checkProductExistsOnCart()) {
       _cart.removeWhere(
         (element) => element.id == _currentProduct.id,
       );
-
-      notifyListeners();
     } else {
       var productForAdd = _productsData.firstWhere(
         (element) => element.id == _currentProduct.id,
       );
 
       _cart.add(productForAdd);
-
-      notifyListeners();
     }
+
+    notifyListeners();
   }
 
   void removeProductOnCart(int productId) {
@@ -209,6 +287,8 @@ class DetailsBloc extends ChangeNotifier {
 
   void removeFavoriteProduct(int productId) {
     _favoriteProducts.removeWhere((element) => element.id == productId);
+
+    _changeSomeCurrentProductValue('likeProduct', false);
 
     notifyListeners();
   }

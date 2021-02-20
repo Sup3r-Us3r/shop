@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shop/blocs/details_bloc.dart';
 import 'package:shop/constants/colors.dart';
 import 'package:shop/models/product_details_model.dart';
-import 'package:shop/screens/details.dart';
 import 'package:shop/util/formatPrice.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -18,8 +17,10 @@ class Cart extends StatelessWidget {
         ProductDetailsModel product = detailsBloc.cart[index];
 
         return GestureDetector(
-          onTap: () =>
-              Navigator.of(context).pushNamed('/details', arguments: product),
+          onTap: () => Navigator.of(context).pushNamed(
+            '/details',
+            arguments: product,
+          ),
           child: Container(
             padding: EdgeInsets.all(20.0),
             margin: EdgeInsets.symmetric(vertical: 10.0),

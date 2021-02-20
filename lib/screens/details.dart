@@ -222,7 +222,7 @@ class Details extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(50.0),
                         child: RaisedButton(
-                          onPressed: () => detailsBloc.toggleProductOnCart(),
+                          onPressed: () => detailsBloc.toggleProductInCart(),
                           color: colorBrown,
                           elevation: 0.0,
                           highlightColor: Colors.transparent,

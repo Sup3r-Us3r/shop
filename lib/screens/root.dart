@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop/blocs/details_bloc.dart';
 import 'package:shop/blocs/user_bloc.dart';
 import 'package:shop/screens/home_page.dart';
 import 'package:shop/screens/sign_in.dart';
@@ -22,9 +23,12 @@ class _Root extends State<Root> {
     super.didChangeDependencies();
 
     UserBloc _userBloc = Provider.of<UserBloc>(context, listen: false);
-    bool signed = await _userBloc.getUserPrefs();
+    DetailsBloc _detailsBloc = Provider.of<DetailsBloc>(context, listen: false);
 
-    if (signed) {
+    bool userSigned = await _userBloc.getUserPrefs();
+    await _detailsBloc.getDetailsBlocState();
+
+    if (userSigned) {
       setState(() {
         _authState = AuthState.loggedIn;
       });
