@@ -8,6 +8,8 @@ import 'package:shop/util/toast.dart';
 class UserBloc extends ChangeNotifier {
   UserModel _userData;
   UserModel get userData => _userData;
+  String _photoChanged = '';
+  String get photoChanged => _photoChanged;
 
   Future<bool> login(String email, String password) async {
     Dio dio = Dio();
@@ -36,6 +38,49 @@ class UserBloc extends ChangeNotifier {
 
       return false;
     }
+  }
+
+  Future<bool> register(
+    String name,
+    String email,
+    String password,
+    String photoFilePath,
+  ) async {
+    Dio dio = Dio();
+    Response response;
+
+    try {
+      FormData formData = FormData.fromMap({
+        'name': name,
+        'email': email,
+        'password': password,
+        'photo': MultipartFile.fromFileSync(
+          photoFilePath,
+          filename: photoFilePath.split('/').last,
+        ),
+      });
+
+      response = await dio.post(
+        'http://192.168.2.8:3333/user/create',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      return response.statusCode == 201 ? true : false;
+    } on DioError catch (err) {
+      toastError(err.response.data['error']);
+      return false;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  void updatePhoto(String value) {
+    _photoChanged = value;
+
+    notifyListeners();
   }
 
   Future _saveUserPrefs(UserModel data) async {
