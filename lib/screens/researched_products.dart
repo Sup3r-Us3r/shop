@@ -92,8 +92,8 @@ class ResearchedProducts extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     onPressed: () => null,
                     icon: Icon(
-                      MaterialCommunityIcons.heart,
-                      color: colorRed,
+                      MaterialCommunityIcons.eye,
+                      color: colorBrown,
                     ),
                   ),
                 ),
