@@ -1,38 +1,65 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shop/blocs/user_bloc.dart';
-import 'package:shop/screens/home_page.dart';
+import 'package:shop/constants/colors.dart';
+import 'package:shop/util/toast.dart';
 import 'package:shop/widgets/button_action.dart';
 import 'package:shop/widgets/text_input_custom.dart';
-import 'package:shop/constants/colors.dart';
 
-class SignIn extends StatelessWidget {
+class SignUp extends StatelessWidget {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String _imagePath = '';
 
   @override
   Widget build(BuildContext context) {
     final double _sizeHeight = MediaQuery.of(context).size.height;
     final UserBloc _userBloc = Provider.of<UserBloc>(context);
 
-    void _login() async {
-      bool response = await _userBloc.login(
+    Future handlePhoto() async {
+      final ImagePicker picker = ImagePicker();
+
+      try {
+        var response = await picker.getImage(source: ImageSource.gallery);
+
+        _imagePath = response.path;
+
+        _userBloc.updatePhoto(_imagePath);
+      } on PlatformException catch (_) {
+        return;
+      } catch (_) {
+        return;
+      }
+    }
+
+    void _register() async {
+      bool response = await _userBloc.register(
+        _nameController.value.text,
         _emailController.value.text,
         _passwordController.value.text,
+        _imagePath,
       );
 
       if (response) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => HomePage(),
-          ),
+        toastSuccess('Usuário criando com sucesso');
+
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/signIn',
+          (route) => false,
         );
       }
     }
 
-    void _signUpPage() {
-      Navigator.of(context).pushNamed('/signUp');
+    void _signInPage() {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/signIn',
+        (route) => false,
+      );
     }
 
     return Scaffold(
@@ -47,6 +74,7 @@ class SignIn extends StatelessWidget {
                 Container(
                   height: 300.0,
                   child: Stack(
+                    alignment: Alignment.center,
                     children: [
                       Container(
                         decoration: BoxDecoration(
@@ -57,18 +85,46 @@ class SignIn extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Positioned(
-                        top: 130.0,
-                        left: 20.0,
-                        child: Text(
-                          'Bem-vindo\nNovamente',
-                          style: TextStyle(
-                            color: colorBlack,
-                            fontSize: 40.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      _userBloc.photoChanged.length != 0
+                          ? Positioned(
+                              top: 60.0,
+                              child: GestureDetector(
+                                onTap: handlePhoto,
+                                child: Container(
+                                  height: 200.0,
+                                  width: 200.0,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Image.file(
+                                      File(_userBloc.photoChanged),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Positioned(
+                              top: 60.0,
+                              child: GestureDetector(
+                                onTap: handlePhoto,
+                                child: Container(
+                                  height: 200.0,
+                                  width: 200.0,
+                                  decoration: BoxDecoration(
+                                    color: colorBrown.withAlpha(70),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Icon(
+                                    EvilIcons.camera,
+                                    size: 80.0,
+                                    color: colorWhite,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -77,6 +133,12 @@ class SignIn extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      TextInputCustom(
+                        icon: AntDesign.user,
+                        label: 'Nome',
+                        controller: _nameController,
+                      ),
+                      SizedBox(height: 10.0),
                       TextInputCustom(
                         icon: MaterialCommunityIcons.email_outline,
                         label: 'E-mail',
@@ -91,11 +153,9 @@ class SignIn extends StatelessWidget {
                       ),
                       SizedBox(height: 30.0),
                       GestureDetector(
-                        onTap: () => _login(),
-                        child: ButtonAction(label: 'Entrar'),
+                        onTap: _register,
+                        child: ButtonAction(label: 'Criar conta'),
                       ),
-                      SizedBox(height: 10.0),
-                      ButtonAction(label: 'Entrar com Google'),
                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 10.0),
                         child: Row(
@@ -126,9 +186,9 @@ class SignIn extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => _signUpPage(),
+                        onTap: _signInPage,
                         child: ButtonAction(
-                          label: 'Registrar',
+                          label: 'Fazer login',
                           redirectsToAnotherPage: true,
                         ),
                       ),
