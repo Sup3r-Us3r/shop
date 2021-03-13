@@ -13,8 +13,8 @@ class Details extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DetailsBloc detailsBloc = Provider.of<DetailsBloc>(context);
-    detailsBloc.currentProductData(product);
+    final DetailsBloc _detailsBloc = Provider.of<DetailsBloc>(context);
+    _detailsBloc.currentProductData(product);
 
     final double _sizeHeight = MediaQuery.of(context).size.height;
     final double _sizeWidth = MediaQuery.of(context).size.width;
@@ -37,8 +37,8 @@ class Details extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => detailsBloc.toggleLikeProduct(),
-                  icon: detailsBloc.showCurrentProductInfo('likeProduct')
+                  onPressed: () => _detailsBloc.toggleLikeProduct(),
+                  icon: _detailsBloc.showCurrentProductInfo('likeProduct')
                       ? Icon(
                           MaterialCommunityIcons.heart,
                           color: colorRed,
@@ -68,7 +68,7 @@ class Details extends StatelessWidget {
                     width: _sizeWidth,
                     child: PageView.builder(
                       onPageChanged: (int indexChangedPage) =>
-                          detailsBloc.whenPageChanged(indexChangedPage),
+                          _detailsBloc.whenPageChanged(indexChangedPage),
                       itemCount: product.images.length,
                       itemBuilder: (BuildContext context, int index) {
                         return InteractiveViewer(
@@ -90,11 +90,11 @@ class Details extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 5.0),
                       child: CircleAvatar(
                         radius: 6.0,
-                        backgroundColor:
-                            detailsBloc.showCurrentProductInfo('currentPage') ==
-                                    index
-                                ? colorBrown
-                                : colorWhite.withAlpha(100),
+                        backgroundColor: _detailsBloc
+                                    .showCurrentProductInfo('currentPage') ==
+                                index
+                            ? colorBrown
+                            : colorWhite.withAlpha(100),
                       ),
                     );
                   }),
@@ -146,7 +146,7 @@ class Details extends StatelessWidget {
                               children: [
                                 IconButton(
                                   onPressed: () =>
-                                      detailsBloc.decrementProduct(),
+                                      _detailsBloc.decrementProduct(),
                                   icon: Icon(
                                     AntDesign.minus,
                                     color: colorBlack,
@@ -155,7 +155,7 @@ class Details extends StatelessWidget {
                                 ),
                                 SizedBox(width: 20.0),
                                 Text(
-                                  detailsBloc
+                                  _detailsBloc
                                       .showCurrentProductInfo('amountValue')
                                       .toString(),
                                   style: TextStyle(
@@ -166,7 +166,7 @@ class Details extends StatelessWidget {
                                 SizedBox(width: 20.0),
                                 IconButton(
                                   onPressed: () =>
-                                      detailsBloc.incrementProduct(),
+                                      _detailsBloc.incrementProduct(),
                                   icon: Icon(
                                     AntDesign.plus,
                                     color: colorBlack,
@@ -177,9 +177,9 @@ class Details extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            detailsBloc.showCurrentProductInfo('totalPrice') !=
+                            _detailsBloc.showCurrentProductInfo('totalPrice') !=
                                     ''
-                                ? detailsBloc
+                                ? _detailsBloc
                                     .showCurrentProductInfo('totalPrice')
                                 : formatPrice(product.price),
                             style: TextStyle(
@@ -221,17 +221,20 @@ class Details extends StatelessWidget {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(50.0),
-                        child: RaisedButton(
-                          onPressed: () => detailsBloc.toggleProductInCart(),
-                          color: colorBrown,
-                          elevation: 0.0,
-                          highlightColor: Colors.transparent,
+                        child: ElevatedButton(
+                          onPressed: () => _detailsBloc.toggleProductInCart(),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                              colorBrown,
+                            ),
+                            elevation: MaterialStateProperty.all<double>(0.0),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                !detailsBloc.productAddedOnCart
+                                !_detailsBloc.productAddedOnCart
                                     ? MaterialCommunityIcons.cart_plus
                                     : MaterialCommunityIcons.cart_remove,
                                 color: colorWhite,
@@ -239,7 +242,7 @@ class Details extends StatelessWidget {
                               ),
                               SizedBox(width: 15.0),
                               Text(
-                                !detailsBloc.productAddedOnCart
+                                !_detailsBloc.productAddedOnCart
                                     ? 'Adicionar ao carrinho'
                                     : 'Remover do carrinho',
                                 style: TextStyle(
