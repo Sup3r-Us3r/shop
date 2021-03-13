@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shop/blocs/user_bloc.dart';
 import 'package:shop/constants/colors.dart';
 import 'package:shop/util/formatPrice.dart';
+import 'package:shop/widgets/text_input_custom.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/blocs/details_bloc.dart';
@@ -26,7 +27,7 @@ class HomePage extends StatelessWidget {
     return productsData;
   }
 
-  Container productList(List<ProductModel> productData, BuildContext context) {
+  Container _productList(List<ProductModel> productData, BuildContext context) {
     Random random = Random();
 
     return Container(
@@ -131,7 +132,7 @@ class HomePage extends StatelessWidget {
     }
   }
 
-  SnackBar _exitToApp(BuildContext context) {
+  SnackBar _exitApp(BuildContext context) {
     return SnackBar(
       behavior: SnackBarBehavior.floating,
       padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -149,6 +150,10 @@ class HomePage extends StatelessWidget {
         onPressed: () => _signOut(context),
       ),
     );
+  }
+
+  void _navigateToResearchedProducts(BuildContext context, String query) {
+    Navigator.of(context).pushNamed('/researchedProducts', arguments: query);
   }
 
   @override
@@ -169,8 +174,8 @@ class HomePage extends StatelessWidget {
                   Builder(
                     builder: (context) => GestureDetector(
                       onTap: () {
-                        Scaffold.of(context).showSnackBar(
-                          _exitToApp(context),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          _exitApp(context),
                         );
                       },
                       child: CircleAvatar(
@@ -277,47 +282,18 @@ class HomePage extends StatelessWidget {
                 top: 30.0,
                 bottom: 30.0,
               ),
-              decoration: BoxDecoration(
-                color: colorGray,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.0),
-                  bottomLeft: Radius.circular(20.0),
+              child: TextInputCustom(
+                controller: _searchController,
+                icon: AntDesign.search1,
+                iconColor: colorDarkGray,
+                label: 'Pesquisar...',
+                textColor: colorDarkGray,
+                placeholderColor: colorDarkGray,
+                borderColor: colorDarkGray,
+                onEditingComplete: () => _navigateToResearchedProducts(
+                  context,
+                  _searchController.text,
                 ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    AntDesign.search1,
-                    color: colorDarkGray,
-                    size: 25.0,
-                  ),
-                  SizedBox(width: 5.0),
-                  Expanded(
-                    child: TextField(
-                      textCapitalization: TextCapitalization.sentences,
-                      cursorColor: colorBrown,
-                      decoration: InputDecoration.collapsed(
-                        hintText: 'Pesquisar...',
-                        hintStyle: TextStyle(
-                          color: colorDarkGray,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                      style: TextStyle(
-                        color: colorDarkGray,
-                        fontSize: 18.0,
-                      ),
-                      controller: _searchController,
-                      onSubmitted: (String inputValue) {
-                        Navigator.of(context).pushNamed(
-                          '/researchedProducts',
-                          arguments: inputValue,
-                        );
-                        _searchController.clear();
-                      },
-                    ),
-                  ),
-                ],
               ),
             ),
             FutureBuilder(
@@ -330,7 +306,7 @@ class HomePage extends StatelessWidget {
                       child: CircularProgressIndicator(),
                     );
                   case ConnectionState.done:
-                    return productList(snapshot.data, context);
+                    return _productList(snapshot.data, context);
                   default:
                     return Center(
                       child: CircularProgressIndicator(),
