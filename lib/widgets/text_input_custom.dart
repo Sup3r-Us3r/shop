@@ -3,14 +3,24 @@ import 'package:shop/constants/colors.dart';
 
 class TextInputCustom extends StatelessWidget {
   final String label;
+  final Color textColor;
+  final Color placeholderColor;
+  final Color borderColor;
   final IconData icon;
+  final Color iconColor;
   final bool typePassword;
+  final void Function() onEditingComplete;
   final TextEditingController controller;
 
   TextInputCustom({
     @required this.label,
+    this.textColor = colorDarkGray,
+    this.placeholderColor = colorBrown,
+    this.borderColor = colorBrown,
     @required this.icon,
+    this.iconColor = colorBrown,
     this.typePassword = false,
+    this.onEditingComplete,
     @required this.controller,
   });
 
@@ -18,41 +28,35 @@ class TextInputCustom extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      cursorColor: colorBrown,
+      cursorColor: placeholderColor,
+      onEditingComplete: onEditingComplete,
       style: TextStyle(
-        color: colorDarkGray,
+        color: textColor,
       ),
       obscureText: typePassword,
       decoration: InputDecoration(
         hintText: label,
         hintStyle: TextStyle(
-          color: colorBrown,
+          color: placeholderColor,
           fontSize: 16.0,
         ),
-        focusColor: colorRed,
+        focusColor: textColor,
         enabledBorder: UnderlineInputBorder(
           borderRadius: BorderRadius.circular(5.0),
           borderSide: BorderSide(
-            color: colorBrown,
+            color: borderColor,
           ),
         ),
         focusedBorder: UnderlineInputBorder(
           borderRadius: BorderRadius.circular(5.0),
           borderSide: BorderSide(
-            color: colorBrown,
+            color: borderColor,
           ),
         ),
-        // border: OutlineInputBorder(
-        //   borderRadius: BorderRadius.circular(5.0),
-        //   borderSide: BorderSide.none,
-        // ),
         contentPadding: EdgeInsets.all(20.0),
         // filled: true,
         // fillColor: colorGray,
-        prefixIcon: Icon(
-          icon,
-          color: colorBrown,
-        ),
+        prefixIcon: Icon(icon, color: iconColor),
       ),
     );
   }
