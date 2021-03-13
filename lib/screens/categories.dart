@@ -7,12 +7,7 @@ import 'package:shop/models/categories_model.dart';
 import 'package:shop/screens/category_products.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class Categories extends StatefulWidget {
-  @override
-  _CategoriesState createState() => _CategoriesState();
-}
-
-class _CategoriesState extends State<Categories> {
+class Categories extends StatelessWidget {
   Future<List<CategoryModel>> _getCategories() async {
     Dio dio = Dio();
     Response response;
@@ -110,12 +105,18 @@ class _CategoriesState extends State<Categories> {
         child: FutureBuilder(
           future: _getCategories(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return categoriesList(snapshot.data, context);
-            } else {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+              case ConnectionState.none:
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              case ConnectionState.done:
+                return categoriesList(snapshot.data, context);
+              default:
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
             }
           },
         ),
